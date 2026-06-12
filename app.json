@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "my-flexible-expo-project",
+    "scheme": "my-flexible-expo-project",
     "slug": "my-flexible-expo-project",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -25,6 +26,10 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ]
   }
 }
