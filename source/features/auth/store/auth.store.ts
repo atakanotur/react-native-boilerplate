@@ -1,6 +1,4 @@
 import { create } from 'zustand'
-import * as SecureStore from 'expo-secure-store'
-import { STORAGE_KEYS } from '../constants/storage.constants'
 import { tokenManager } from '@/source/services/tokenManager'
 
 interface AuthState {
@@ -29,12 +27,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   hydrate: async () => {
     try {
-      const accessToken = await SecureStore.getItemAsync(
-        STORAGE_KEYS.ACCESS_TOKEN_KEY
-      )
-      const refreshToken = await SecureStore.getItemAsync(
-        STORAGE_KEYS.REFRESH_TOKEN_KEY
-      )
+      const accessToken = tokenManager.getAccessToken();
+      const refreshToken = await tokenManager.getRefreshToken()
 
       if (accessToken && refreshToken) {
         set({ accessToken, isAuthenticated: true })
@@ -48,10 +42,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   updateAccessToken: async (newAccessToken: string) => {
-    await SecureStore.setItemAsync(
-      STORAGE_KEYS.ACCESS_TOKEN_KEY,
-      newAccessToken
-    )
+    //expiresIn güncelle
+    tokenManager.setAccessToken(newAccessToken, 30000)
     set({ accessToken: newAccessToken })
   },
 }))

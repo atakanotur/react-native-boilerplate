@@ -2,7 +2,7 @@
 
 import { tokenManager } from './tokenManager'
 import { tokenRefreshService } from './tokenRefreshService'
-import apiClient from './api'
+import { apiClient, RefreshResponse } from './api'
 
 interface UserProfile {
   id: string
@@ -31,7 +31,7 @@ class SilentAuthService {
         }
       }
 
-      const response = await apiClient.post('/auth/refresh', {
+      const response = await apiClient.post<RefreshResponse>('/auth/refresh', {
         refreshToken,
       })
 

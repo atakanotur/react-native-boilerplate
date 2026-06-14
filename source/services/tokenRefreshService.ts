@@ -1,13 +1,7 @@
 //source/services/tokenRefreshService.ts
 
 import { tokenManager } from './tokenManager'
-import apiClient from './api'
-
-interface RefreshResponse {
-  accessToken: string
-  refreshToken: string
-  expiresIn: number
-}
+import {apiClient,RefreshResponse} from './api'
 
 class TokenRefreshService {
   private refreshTimer: NodeJS.Timeout | null = null

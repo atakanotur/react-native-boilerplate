@@ -1,5 +1,10 @@
-import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import apiClient from '@/source/services/api'
+import {
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
+import { apiClient } from '@/source/services/api'
 import { tokenManager } from '@/source/services/tokenManager'
 import { tokenRefreshService } from '@/source/services/tokenRefreshService'
 import { tokenExpirationHandler } from '@/source/services/tokenExpirationHandler'
@@ -33,16 +38,15 @@ export const authQueryKeys = {
 export const sessionQueryOptions = queryOptions({
   queryKey: authQueryKeys.session(),
   queryFn: async (): Promise<UserProfile | null> => {
-    const authState = await silentAuthService.attemptSilentAuth();
-    console.log("authState : ", authState);
+    const authState = await silentAuthService.attemptSilentAuth()
     if (authState.isAuthenticated && authState.user) {
-      return authState.user as UserProfile;
+      return authState.user as UserProfile
     }
-    return null;
+    return null
   },
   staleTime: Infinity,
   gcTime: Infinity,
-});
+})
 
 export function useSession() {
   const queryClient = useQueryClient()
@@ -55,20 +59,23 @@ export function useSession() {
 }
 
 export function useLoginMutation() {
-  const queryClient = useQueryClient();
-  const signIn = useAuthStore((state) => state.signIn);
+  const queryClient = useQueryClient()
+  const signIn = useAuthStore((state) => state.signIn)
 
   return useMutation({
     mutationFn: async ({ email, password }: LoginCredentials) => {
-      const response = await apiClient.post('/auth/login', { email, password });
-      const { accessToken, expiresIn, user } = response.data;
-      await signIn({ accessToken, expiresIn });
-      return user;
+      const response = await apiClient.post<LoginResponse>('/auth/login', {
+        email,
+        password,
+      })
+      const { accessToken, expiresIn, user } = response.data
+      await signIn({ accessToken, expiresIn })
+      return user
     },
     onSuccess: (user) => {
-      queryClient.setQueryData(authQueryKeys.session(), user);
+      queryClient.setQueryData(authQueryKeys.session(), user)
     },
-  });
+  })
 }
 
 export function useLogoutMutation() {
