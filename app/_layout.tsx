@@ -31,7 +31,6 @@ function RootLayoutNav() {
     const rootNavigationState = useRootNavigationState();
 
     useEffect(() => {
-        console.log("isReady : ", isReady)
         if (!isReady) return;
 
         if(!rootNavigationState.key) return;

@@ -13,18 +13,13 @@ export function useAppReady() {
   useEffect(() => {
     async function prepare() {
       try {
-        console.log('Hydrating app')
         const token = await hydrate()
-        console.log('Hydrated app', token)
         if (token) await queryClient.fetchQuery(sessionQueryOptions)
       } catch (error) {
         console.error('Hydration error', error)
       } finally {
         setIsReady(true)
-        setTimeout(async () => {
-          await SplashScreen.hideAsync()
-          console.log('4. Splash ekranı indirildi.')
-        }, 1000)
+        await SplashScreen.hideAsync()
       }
     }
 
