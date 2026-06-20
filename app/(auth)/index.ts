@@ -1,3 +1,3 @@
-import { LoginScreen } from '@/source/features/auth/screens/LoginScreen'
+import { GuideScreen } from '@/source/features/auth/screens/GuideScreen'
 
-export default LoginScreen;
+export default GuideScreen
