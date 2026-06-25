@@ -1,13 +1,23 @@
 import { create } from 'zustand'
 import { tokenManager } from '@/source/services/tokenManager'
+import { secureStorage } from '@/source/services/secureStorage'
 
 interface AuthState {
   accessToken: string | null
   isAuthenticated: boolean
+<<<<<<< Updated upstream
   signIn: (tokens: { accessToken: string; expiresIn: number }) => Promise<void>
+=======
+  signIn: (tokens: {
+    accessToken: string
+    refreshToken: string
+    expiresIn: number
+    rememberMe?: boolean
+    email?: string
+  }) => Promise<void>
+>>>>>>> Stashed changes
   signOut: () => Promise<void>
   hydrate: () => Promise<string | null>
-  updateAccessToken: (newAccessToken: string) => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -15,8 +25,26 @@ export const useAuthStore = create<AuthState>((set) => ({
   refreshToken: null,
   isAuthenticated: false,
 
+<<<<<<< Updated upstream
   signIn: async ({ accessToken, expiresIn }) => {
     tokenManager.setAccessToken(accessToken, expiresIn)
+=======
+  signIn: async ({
+    accessToken,
+    refreshToken,
+    expiresIn,
+    rememberMe = true,
+    email,
+  }) => {
+    tokenManager.setAccessToken(accessToken, expiresIn)
+    await tokenManager.setRefreshToken(refreshToken, rememberMe)
+
+    if (rememberMe && email) {
+      await secureStorage.storeRememberedEmail(email)
+    } else if (!rememberMe) {
+      await secureStorage.removeRememberedEmail()
+    }
+>>>>>>> Stashed changes
     set({ accessToken, isAuthenticated: true })
   },
 
@@ -27,23 +55,17 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   hydrate: async () => {
     try {
-      const accessToken = tokenManager.getAccessToken();
+      const accessToken = tokenManager.getAccessToken()
       const refreshToken = await tokenManager.getRefreshToken()
 
-      if (accessToken && refreshToken) {
+      if (refreshToken) {
         set({ accessToken, isAuthenticated: true })
-        return accessToken
+        return refreshToken
       }
     } catch (error) {
       console.error('Hydration error', error)
     }
     set({ accessToken: null, isAuthenticated: false })
     return null
-  },
-
-  updateAccessToken: async (newAccessToken: string) => {
-    //expiresIn güncelle
-    tokenManager.setAccessToken(newAccessToken, 30000)
-    set({ accessToken: newAccessToken })
   },
 }))

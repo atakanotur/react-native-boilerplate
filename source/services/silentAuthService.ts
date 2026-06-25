@@ -3,12 +3,18 @@
 import { tokenManager } from './tokenManager'
 import { tokenRefreshService } from './tokenRefreshService'
 import { apiClient, RefreshResponse } from './api'
+<<<<<<< Updated upstream
 
 interface UserProfile {
   id: string
   email: string
   name: string
 }
+=======
+import { AuthApi } from '../features/auth/api/auth.api'
+import { User } from '../features/auth/types/auth.types'
+import { useAuthStore } from '../features/auth/store/auth.store'
+>>>>>>> Stashed changes
 
 interface AuthState {
   isAuthenticated: boolean
@@ -23,6 +29,7 @@ class SilentAuthService {
       const refreshToken = await tokenManager.getRefreshToken()
 
       if (!refreshToken) {
+        useAuthStore.setState({ accessToken: null, isAuthenticated: false })
         return {
           isAuthenticated: false,
           isLoading: false,
@@ -35,16 +42,21 @@ class SilentAuthService {
         refreshToken,
       })
 
-      const {
-        accessToken,
-        expiresIn,
-        refreshToken: newRefreshToken,
-      } = response.data
+      const accessToken =
+        response.data.accessToken || (response.data as any).token
+      const expiresIn =
+        response.data.expiresIn || (response.data as any).expires_in || 3600
+      const newRefreshToken = response.data.refreshToken || refreshToken
 
-      tokenManager.setAccessToken(accessToken, expiresIn)
+      tokenManager.setAccessToken(accessToken, Number(expiresIn))
+      useAuthStore.setState({ accessToken, isAuthenticated: true })
       await tokenManager.setRefreshToken(newRefreshToken)
 
+<<<<<<< Updated upstream
       const userResponse = await apiClient.get<UserProfile>('/auth/me')
+=======
+      const { data: userResponse } = await apiClient.get<User>('/users/me')
+>>>>>>> Stashed changes
 
       tokenRefreshService.startAutoResfresh()
 
@@ -55,7 +67,9 @@ class SilentAuthService {
         error: null,
       }
     } catch (error) {
+      console.error('Silent auth failed', error)
       await tokenManager.clearAllTokens()
+      useAuthStore.setState({ accessToken: null, isAuthenticated: false })
 
       return {
         isAuthenticated: false,

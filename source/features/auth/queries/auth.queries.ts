@@ -10,6 +10,7 @@ import { tokenRefreshService } from '@/source/services/tokenRefreshService'
 import { tokenExpirationHandler } from '@/source/services/tokenExpirationHandler'
 import { silentAuthService } from '@/source/services/silentAuthService'
 import { useAuthStore } from '../store/auth.store'
+<<<<<<< Updated upstream
 
 export interface UserProfile {
   id: string
@@ -28,6 +29,14 @@ interface LoginResponse {
   expiresIn: number
   user: UserProfile
 }
+=======
+import { AuthApi } from '../api/auth.api'
+import {
+  LoginCredentials,
+  RegisterCredentials,
+  User,
+} from '../types/auth.types'
+>>>>>>> Stashed changes
 
 export const authQueryKeys = {
   all: ['auth'] as const,
@@ -63,6 +72,7 @@ export function useLoginMutation() {
   const signIn = useAuthStore((state) => state.signIn)
 
   return useMutation({
+<<<<<<< Updated upstream
     mutationFn: async ({ email, password }: LoginCredentials) => {
       const response = await apiClient.post<LoginResponse>('/auth/login', {
         email,
@@ -70,7 +80,36 @@ export function useLoginMutation() {
       })
       const { accessToken, expiresIn, user } = response.data
       await signIn({ accessToken, expiresIn })
+=======
+    mutationFn: async (credentials: LoginCredentials) => {
+      const response = await AuthApi.login(credentials)
+
+      const { user, accessToken, refreshToken } = response
+
+      await signIn({
+        accessToken,
+        refreshToken,
+        expiresIn: (response as any).expiresIn || (response as any).expires_in || 3600,
+        rememberMe: credentials.rememberMe,
+        email: credentials.email,
+      })
+
+>>>>>>> Stashed changes
       return user
+    },
+    onSuccess: (user) => {
+      queryClient.setQueryData(authQueryKeys.session(), user)
+    }
+  })
+}
+
+export function useRegisterMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (credentials: RegisterCredentials) => {
+      const response = await AuthApi.register(credentials)
+      return response
     },
     onSuccess: (user) => {
       queryClient.setQueryData(authQueryKeys.session(), user)
