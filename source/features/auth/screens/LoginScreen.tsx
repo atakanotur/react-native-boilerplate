@@ -1,10 +1,3 @@
-<<<<<<< Updated upstream
-import React, { useState } from 'react'
-import { View, StyleSheet } from 'react-native'
-import { Text, Input, Button } from "@/source/shared/components/ui"
-import { Screen } from "@/source/shared/components/layout"
-import { useAuth } from '../hooks/useAuth'
-=======
 import React, { useEffect } from 'react';
 import { View, StyleSheet, KeyboardAvoidingView, Platform, Alert, ScrollView } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
@@ -25,16 +18,12 @@ const loginSchema = z.object({
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
->>>>>>> Stashed changes
 
 export const LoginScreen = () => {
   const { colors } = useTheme();
   const router = useRouter();
   const { mutate: login, isPending: isLoggingIn, isError: error } = useLoginMutation();
 
-<<<<<<< Updated upstream
-  const { login, isLoggingIn, error } = useAuth()
-=======
   const { control, handleSubmit, setValue } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -43,7 +32,6 @@ export const LoginScreen = () => {
       rememberMe: true,
     }
   });
->>>>>>> Stashed changes
 
   useEffect(() => {
     secureStorage.getRememberedEmail().then((savedEmail) => {

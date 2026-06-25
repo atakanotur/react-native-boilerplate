@@ -1,7 +1,6 @@
 import {
   queryOptions,
   useMutation,
-  useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
 import { apiClient } from '@/source/services/api'
@@ -10,33 +9,12 @@ import { tokenRefreshService } from '@/source/services/tokenRefreshService'
 import { tokenExpirationHandler } from '@/source/services/tokenExpirationHandler'
 import { silentAuthService } from '@/source/services/silentAuthService'
 import { useAuthStore } from '../store/auth.store'
-<<<<<<< Updated upstream
-
-export interface UserProfile {
-  id: string
-  email: string
-  name: string
-}
-
-export interface LoginCredentials {
-  email: string
-  password: string
-}
-
-interface LoginResponse {
-  accessToken: string
-  refreshToken: string
-  expiresIn: number
-  user: UserProfile
-}
-=======
 import { AuthApi } from '../api/auth.api'
 import {
   LoginCredentials,
   RegisterCredentials,
   User,
 } from '../types/auth.types'
->>>>>>> Stashed changes
 
 export const authQueryKeys = {
   all: ['auth'] as const,
@@ -46,10 +24,10 @@ export const authQueryKeys = {
 
 export const sessionQueryOptions = queryOptions({
   queryKey: authQueryKeys.session(),
-  queryFn: async (): Promise<UserProfile | null> => {
+  queryFn: async (): Promise<User | null> => {
     const authState = await silentAuthService.attemptSilentAuth()
     if (authState.isAuthenticated && authState.user) {
-      return authState.user as UserProfile
+      return authState.user as User
     }
     return null
   },
@@ -60,7 +38,7 @@ export const sessionQueryOptions = queryOptions({
 export function useSession() {
   const queryClient = useQueryClient()
 
-  const cachedUser = queryClient.getQueryData<UserProfile | null>(
+  const cachedUser = queryClient.getQueryData<User | null>(
     authQueryKeys.session()
   )
 
@@ -72,15 +50,6 @@ export function useLoginMutation() {
   const signIn = useAuthStore((state) => state.signIn)
 
   return useMutation({
-<<<<<<< Updated upstream
-    mutationFn: async ({ email, password }: LoginCredentials) => {
-      const response = await apiClient.post<LoginResponse>('/auth/login', {
-        email,
-        password,
-      })
-      const { accessToken, expiresIn, user } = response.data
-      await signIn({ accessToken, expiresIn })
-=======
     mutationFn: async (credentials: LoginCredentials) => {
       const response = await AuthApi.login(credentials)
 
@@ -94,7 +63,6 @@ export function useLoginMutation() {
         email: credentials.email,
       })
 
->>>>>>> Stashed changes
       return user
     },
     onSuccess: (user) => {

@@ -1,25 +1,14 @@
-//source/services/silentAuthService.ts
-
 import { tokenManager } from './tokenManager'
 import { tokenRefreshService } from './tokenRefreshService'
 import { apiClient, RefreshResponse } from './api'
-<<<<<<< Updated upstream
-
-interface UserProfile {
-  id: string
-  email: string
-  name: string
-}
-=======
 import { AuthApi } from '../features/auth/api/auth.api'
 import { User } from '../features/auth/types/auth.types'
 import { useAuthStore } from '../features/auth/store/auth.store'
->>>>>>> Stashed changes
 
 interface AuthState {
   isAuthenticated: boolean
   isLoading: boolean
-  user: UserProfile | null
+  user: User | null
   error: string | null
 }
 
@@ -52,18 +41,14 @@ class SilentAuthService {
       useAuthStore.setState({ accessToken, isAuthenticated: true })
       await tokenManager.setRefreshToken(newRefreshToken)
 
-<<<<<<< Updated upstream
-      const userResponse = await apiClient.get<UserProfile>('/auth/me')
-=======
       const { data: userResponse } = await apiClient.get<User>('/users/me')
->>>>>>> Stashed changes
 
       tokenRefreshService.startAutoResfresh()
 
       return {
         isAuthenticated: true,
         isLoading: false,
-        user: userResponse.data,
+        user: userResponse,
         error: null,
       }
     } catch (error) {

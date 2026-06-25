@@ -1,11 +1,4 @@
 export interface User {
-<<<<<<< Updated upstream
-    id: number
-    email: string
-    name: string
-    role: string
-}
-=======
   id: string
   email: string
   name: string | null
@@ -32,4 +25,3 @@ export interface LoginResponse {
   refreshToken: string
   user: User
 }
->>>>>>> Stashed changes

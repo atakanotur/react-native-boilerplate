@@ -5,9 +5,6 @@ import { secureStorage } from '@/source/services/secureStorage'
 interface AuthState {
   accessToken: string | null
   isAuthenticated: boolean
-<<<<<<< Updated upstream
-  signIn: (tokens: { accessToken: string; expiresIn: number }) => Promise<void>
-=======
   signIn: (tokens: {
     accessToken: string
     refreshToken: string
@@ -15,7 +12,6 @@ interface AuthState {
     rememberMe?: boolean
     email?: string
   }) => Promise<void>
->>>>>>> Stashed changes
   signOut: () => Promise<void>
   hydrate: () => Promise<string | null>
 }
@@ -25,10 +21,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   refreshToken: null,
   isAuthenticated: false,
 
-<<<<<<< Updated upstream
-  signIn: async ({ accessToken, expiresIn }) => {
-    tokenManager.setAccessToken(accessToken, expiresIn)
-=======
   signIn: async ({
     accessToken,
     refreshToken,
@@ -44,7 +36,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     } else if (!rememberMe) {
       await secureStorage.removeRememberedEmail()
     }
->>>>>>> Stashed changes
     set({ accessToken, isAuthenticated: true })
   },
 
