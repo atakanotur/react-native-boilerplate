@@ -1,133 +1,41 @@
 # AI Development Rule Set for React Native Architect
 
-This document outlines the strict architectural and coding guidelines for this React Native project. Future AI agents and developers must adhere to these rules autonomously when modifying or generating code.
+This document serves as the **STRICT, UNAMBIGUOUS** constitution for all AI agents and engineers operating within this repository. Deviations from these rules are considered anti-patterns and are strictly forbidden.
 
-## 1. Tech Stack & Core Libraries
+## 1. Clean Code & Architecture Principles
+- **ALWAYS** enforce the Single Responsibility Principle (SRP). Components must do one thing. If a component exceeds 150 lines, it MUST be broken down into smaller, colocated sub-components.
+- **ALWAYS** use `camelCase` for directories, variables, and functions. Use `PascalCase` strictly for React components and Types/Interfaces. 
+- **NEVER** use Magic Numbers or Strings. **ALWAYS** extract them into shared constants (e.g., `UI.spacing.md`).
+- **ALWAYS** keep business logic decoupled from UI components. Extract complex logic into custom hooks (`/source/hooks` or feature-specific hooks).
+- **NEVER** use `any`. **ALWAYS** strictly type every variable, return type, and function parameter. Use `unknown` with type narrowing if the shape is truly dynamic.
 
-- **Framework:** Expo (~54) with React Native (0.81.5).
-- **Navigation:** Expo Router (~6).
-- **Language:** TypeScript (Strict mode enabled).
-- **State Management:** Zustand (for client state) and TanStack React Query (for server state).
-- **Networking:** Axios (Singleton pattern with interceptors).
-- **Forms & Validation:** `react-hook-form` and `zod`.
-- **Storage:** `react-native-keychain`, `@react-native-async-storage/async-storage`, and `expo-secure-store`.
+## 2. React & React Native Performance
+- **NEVER** pass inline objects (e.g., `style={{ marginTop: 10 }}`) or inline arrays as props. **ALWAYS** use `StyleSheet.create` or `useMemo` to prevent unnecessary re-renders.
+- **NEVER** pass anonymous functions (e.g., `onPress={() => doSomething()}`) directly in JSX. **ALWAYS** wrap them in `useCallback`.
+- **ALWAYS** wrap custom UI components in `React.memo` and provide an explicit `displayName`.
+- **ALWAYS** optimize `FlatList` or `FlashList` by providing `keyExtractor`, `getItemLayout`, `initialNumToRender`, and `windowSize`. **NEVER** use `index` as a key in dynamic lists.
+- **ALWAYS** colocate state as close to where it is used as possible. Do not lift state globally unless it is shared across completely separate module branches.
 
-**Rule:** Always use the defined tech stack. Do not introduce Redux, Context API (for global state), or fetch natively unless absolutely necessary and justified.
+## 3. Expo Ecosystem & Routing
+- **ALWAYS** place Expo Router entry points and layouts inside `/app`. **NEVER** place business logic, complex UI components, or state management inside `/app`.
+- **ALWAYS** implement the actual screen UI inside `/source/features/[feature]/screens` and import it into the `/app` wrapper.
+- **ALWAYS** prefix client-safe environment variables with `EXPO_PUBLIC_`. **NEVER** expose sensitive secrets (like private API keys) in the JS bundle. Use secure backend proxying for sensitive keys.
+- **ALWAYS** use strongly typed routes when navigating with Expo Router (`router.push('/(auth)/login')`).
 
-## 2. Architecture & Folder Structure
+## 4. State Management Synergy (Zustand + TanStack Query)
+- **NEVER** duplicate server state in Zustand. **ALWAYS** use TanStack Query for data fetching, caching, and server state. Zustand is strictly for client-only state (e.g., active tabs, dark mode toggle, local session flags).
+- **ALWAYS** declare TanStack Query keys using a centralized, strongly typed factory object (e.g., `authQueryKeys.all`).
+- **ALWAYS** mutate data using `useMutation` and immediately update the local cache using `queryClient.setQueryData` for optimistic UI updates.
+- **ALWAYS** export Zustand stores as custom hooks from a `.store.ts` file.
 
-The project follows a Feature-Sliced modular architecture, separated from Expo Router's routing logic.
+## 5. Styling Conventions (Custom Theme Architecture)
+- **NEVER** use third-party styling libraries like Tailwind, NativeWind, or styled-components.
+- **ALWAYS** extract styles into a co-located `.styles.ts` file (e.g., `Button.styles.ts` next to `Button.tsx`).
+- **ALWAYS** use the `createStyles(colors)` factory function pattern to inject the current theme colors into the StyleSheet.
+- **ALWAYS** consume colors via the `useTheme()` hook from the `theme` feature.
+- **NEVER** hardcode color hex codes or numeric spacing values in `.tsx` files. Route all dimensions through the shared `UI` constants object.
 
-- `/app`: Strictly for Expo Router screens and layouts (`_layout.tsx`, `(tabs)`, `(auth)`). **Do not put business logic here.**
-- `/source/features`: Contains isolated domain logic (e.g., `auth`, `theme`). Each feature must include specific subfolders as needed: `api`, `constants`, `queries`, `screens`, `store`, `types`.
-- `/source/shared`: Contains globally reusable UI components (`/components/ui`, `/components/layout`) and constants.
-- `/source/services`: Contains singleton services for networking and local device APIs (e.g., `api.ts`, `tokenManager.ts`).
-- `/source/lib`: Contains setup and configuration for third-party tools (e.g., `queryClient.ts`).
-
-### Strict Placement Rules:
-- **New Screens:** Expo Router wrappers go to `/app`, but the actual UI implementation goes to `/source/features/[feature-name]/screens`.
-- **New Components:** If reusable globally, place in `/source/shared/components`. If specific to a domain, place in `/source/features/[feature-name]/components`.
-- **Imports:** Always use absolute path aliases starting with `@/source/...` or `@/app/...`.
-
-## 3. Coding Standards & TypeScript
-
-### Functional Components & Types
-- **Always** use Named Exports. Never use `export default` (except for Expo Router files in `/app` which require it).
-- **Always** define Prop interfaces explicitly. Extend React Native types when wrapping primitives.
-- **Always** wrap UI components in `memo` and use `useCallback` / `useMemo` for performance optimization.
-- **Always** add a `displayName` when using `memo`.
-
-**Do:**
-```tsx
-import React, { memo } from 'react';
-import { View, ViewStyle, StyleProp } from 'react-native';
-
-export interface CustomComponentProps {
-  label: string;
-  style?: StyleProp<ViewStyle>;
-}
-
-export const CustomComponent = memo<CustomComponentProps>(({ label, style }) => {
-  return <View style={style}>{/* ... */}</View>;
-});
-
-CustomComponent.displayName = 'CustomComponent';
-```
-
-**Don't:**
-```tsx
-export default function CustomComponent(props: any) { // No default exports, no 'any'
-  return <View />
-}
-```
-
-## 4. State Management & Data Fetching
-
-### Server State (TanStack Query)
-- **Always** define query keys in a centralized factory object (e.g., `authQueryKeys.all`).
-- **Always** encapsulate `useQuery` and `useMutation` inside custom hooks exported from a `.queries.ts` file in the feature directory.
-- Update cache optimistically or immediately upon mutation success via `queryClient.setQueryData`.
-
-**Do:**
-```typescript
-export const featureQueryKeys = {
-  all: ['feature'] as const,
-  detail: (id: string) => [...featureQueryKeys.all, id] as const,
-};
-
-export function useFeatureDetail(id: string) {
-  return useQuery({
-    queryKey: featureQueryKeys.detail(id),
-    queryFn: () => Api.getFeature(id),
-  });
-}
-```
-
-### Client State (Zustand)
-- Use Zustand strictly for UI state or local session state.
-- Create atomic stores inside `/source/features/[feature]/store/[feature].store.ts`.
-
-## 5. Styling Conventions
-
-The project does **not** use Tailwind or Styled Components. It relies on a custom Theme Hook and React Native's `StyleSheet`.
-
-- **Always** extract styles into a separate `.styles.ts` file co-located with the component (e.g., `Button.styles.ts` next to `Button.tsx`).
-- **Always** use the `createStyles` factory function pattern that accepts theme colors.
-- **Always** fetch colors from the `useTheme()` hook.
-- **Always** use global UI constants (e.g., `UI.spacing.sm`, `UI.button.borderRadius`) from `@/source/shared/constants/ui` instead of hardcoded numeric values.
-
-**Do:**
-```typescript
-// Component.styles.ts
-import { StyleSheet } from 'react-native';
-import { ColorPalette } from '@/source/features/theme/types/theme.types';
-import { UI } from '@/source/shared/constants/ui';
-
-export const createStyles = (colors: ColorPalette) => StyleSheet.create({
-  container: {
-    backgroundColor: colors.background,
-    padding: UI.spacing.md,
-    borderRadius: UI.radius.md,
-  }
-});
-```
-
-```tsx
-// Component.tsx
-import React from 'react';
-import { View } from 'react-native';
-import { useTheme } from '@/source/features/theme/hooks/useTheme';
-import { createStyles } from './Component.styles';
-
-export const Component = () => {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
-
-  return <View style={styles.container} />;
-};
-```
-
-**Don't:**
-- Never hardcode colors like `backgroundColor: '#000'`.
-- Never define `StyleSheet.create` inside the `.tsx` file if using theme colors.
-- Avoid inline styles.
+## 6. Security & Storage
+- **ALWAYS** use `expo-secure-store` or `react-native-keychain` for sensitive data (e.g., JWT tokens, PII).
+- **NEVER** log sensitive information, auth tokens, or entire API responses to the console in production environments.
+- **ALWAYS** handle token rotation via the established Axios interceptors and singleton `ApiClient`.
